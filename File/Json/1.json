@@ -1,0 +1,18 @@
+{
+  "tag": "div",
+  "class": "c1 c2",
+  "style": "color:red;",
+  "html": "这是一段话",
+  "son": [
+    {
+      "tag": "a",
+      "href": "http://hello.imwork.net",
+      "html": "这是一个超链接"
+    },
+    {
+      "tag": "a",
+      "href": "http://locahost",
+      "html": "这是第二个超链接"
+    }
+  ]
+}

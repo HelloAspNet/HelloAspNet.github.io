@@ -1,0 +1,194 @@
+<form>
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div style="width:100%;min-width:600px;max-width:1300px;margin:0px auto;"> 
+			<div class="btn-group" style="float:left;margin-top:8px;">
+				<input type="button" class="btn btn-default" ng-click="addModule(rootModule,{})" value="添加模块" />
+			</div>
+			<div class="btn-group" style="float:left;margin-top:8px;margin-left:15px;"> 
+				<input type="button" class="btn btn-default" ng-click="addModule(rootTemplate,{})" ng-if="true" value="添加模块模板" />
+				<input type="button" class="btn btn-default" ng-repeat="t in rootTemplate.children" data-toggle="modal" data-target="#modalTemplate-{{t.id}}" value="{{t.title}}" />
+			</div>
+			<div class="btn-group" style="float:left;margin-top:8px;margin-left:15px;"> 
+				<input type="button" class="btn btn-default" ui-sref="navigator" ng-if="true" value="返回导航页" /> 
+			</div>
+			<div class="btn-group pull-right" style="float:right;margin-top:8px;">
+				<!--<input type="submit" class="btn btn-default" value="预览" />-->
+				<input type="button" class="btn btn-default" data-toggle="modal" data-target="#modalHtml" value="查看代码" />
+				<input type="button" class="btn btn-default" ng-click="Html.build()" value="预览生成文件" />
+				<input type="button" class="btn btn-default" data-toggle="modal" data-target="#modalConfig" value="获取配置" />
+			</div>
+			<div class="btn-group pull-right" style="float:right;margin-top:8px;" ng-if="false"> 
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+					Action <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu" role="menu">
+					<li><a href="javascript:;">Action</a></li>
+					<li><a href="javascript:;">Another action</a></li>
+					<li><a href="javascript:;">Something else here</a></li>
+					<li class="divider"></li>
+					<li><a href="javascript:;">Separated link</a></li>
+				</ul> 
+			</div>
+		</div>
+	</div>   
+	<!--  Template模态窗  -->
+	<div templatedrt="templatedrt" ng-repeat="t in rootTemplate.children" model="t"></div>
+	<!--  /Template模态窗  -->
+	<div class="container">
+		<!--  固定模块  -->
+		<!--  页面总体框架  -->
+		<div class="panel panel-default module" id="main">
+			<div class="panel-heading">项目:</div>
+			<div class="panel-body">
+				<span class="input-group w1">
+					<span class="input-group-addon">项目名称</span>
+					<input type="text" class="form-control" ng-model="Project.folder" ng-blur="$root.Imager.get();" ng-readonly="Project.lock"/>
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" ng-click="Project.create()">创建</button>
+						<button class="btn btn-default" type="button" ng-click="Project.destroy()">删除</button>
+						<button class="btn btn-default" type="button" ng-if="false" ng-click="Project.open()">打开文件夹</button>
+						<button class="btn btn-default" type="button" ng-click="load()">载入已有项目</button>
+					</span>
+				</span>
+				<span class="input-group w1">
+					<span class="input-group-addon">文档标题</span>
+					<input type="text" class="form-control" ng-model="main.title"/>
+				</span>
+				<span class="input-group">
+					<span class="input-group-addon">class</span>
+					<input type="text" class="form-control" ng-model="main.css.class"/>
+				</span>
+				<span class="input-group">
+					<span class="input-group-addon">style</span>
+					<input type="text" class="form-control" ng-model="main.css.style"/>
+				</span>
+				<span class="input-group">
+					<span class="input-group-addon">width</span>
+					<input type="text" class="form-control" ng-model="main.css.width"/>
+				</span>
+			</div>
+		</div>
+		<!--  /页面总体框架  -->
+		<!--  banner  -->
+		<div class="panel panel-default module">
+			<div class="panel-heading">大广告图:<label class="pull-right" style="font-weight:normal;"><input type="checkbox" ng-model="banner.use"/>启用</label></div>
+			<div class="panel-body">
+				<span class="input-group">
+					<span class="input-group-addon">class</span>
+					<input type="text" class="form-control" ng-model="banner.css.class"/>
+				</span>
+				<span class="input-group">
+					<span class="input-group-addon">style</span>
+					<input type="text" class="form-control" ng-model="banner.css.style"/>
+				</span>
+				<span class="input-group">
+					<span class="input-group-addon">height</span>
+					<input type="text" class="form-control" ng-model="banner.css.height"/>
+				</span>
+				<span class="input-group w1">
+					<span class="input-group-addon">background</span>
+					<input type="text" class="form-control" ng-model="banner.css.background"/>
+					<span class="input-group-btn">
+						<button class="btn btn-default" type="button" ng-click="$root.Imager.choose(banner)" data-toggle="modal" data-target="#modalImage">选择图片</button>
+					</span>
+				</span>
+			</div>
+		</div>
+		<!--  /banner  -->
+		<!--  模块1  -->
+		<div moduledrt="moduledrt" ng-repeat="m in rootModule.children" model="m"></div>
+		<!--  /模块1  --> 
+	</div>
+	<div class="hide"> 
+		<input type="hidden" id="html" name="html"/>
+	</div>			
+ 
+	<!--  Html模态窗  -->
+	<div class="modal fade bs-example-modal-lg" id="modalHtml" tabindex="-1" role="dialog" aria-labelledby="modalHtmlTitle" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h5 class="modal-title" id="modalHtmlTitle">查看代码</h5>
+				</div>
+				<div class="modal-body">
+					<textarea class="form-control" id="txtCode" rows="30" cols="40" style="min-width:520px;min-height:260px;"></textarea>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--  /Html模态窗  -->
+ 
+	<!--  Config模态窗  -->
+	<div class="modal fade bs-example-modal-lg" id="modalConfig" tabindex="-1" role="dialog" aria-labelledby="modalConfigTitle" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h5 class="modal-title" id="modalConfigTitle">配置信息</h5>
+				</div>
+				<div class="modal-body">
+					<textarea class="form-control" ng-model="$root.config" rows="30" cols="40" style="min-width:520px;min-height:260px;"></textarea>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="saveConfig()">保存配置</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--  /Config模态窗  -->
+	
+	<!--  Image模态窗  -->
+	<div class="modal fade bs-example-modal-lg" id="modalImage" tabindex="-1" role="dialog" aria-labelledby="modalImageTitle" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<h5 class="modal-title" id="modalImageTitle">选择图片 
+							<div class="btn-group pull-right" style="margin:-5px 20px 0 0;">
+								<input type="button" class="btn btn-default" value="刷新" ng-click="refresh();"/>
+								<input type="button" class="btn btn-default" value="8" ng-click="Pager.changeSize(8);"/>
+								<input type="button" class="btn btn-default" value="12" ng-click="Pager.changeSize(12);"/>
+								<input type="button" class="btn btn-default" value="16" ng-click="Pager.changeSize(16);"/>
+							</div> 
+					</h5>
+				</div>
+				<div class="modal-body"> 
+					<div class="row"> 
+						<div class="col-xs-6 col-md-3" ng-repeat="image in $root.Imager.imageListCurrent">
+							<a href="javascript:;" class="thumbnail" ng-class="{active:'image/'+image == $root.Imager.imageCurrent}" ng-click="$root.Imager.click('image/'+image)" style="height: 180px; width: 100%; display: block;">
+								<img alt="{{image}}" ng-src="{{folders}}{{Project.folder}}/image/{{image}}" style="max-height: 100%; max-width: 100%; display: block;" />
+							</a>
+						</div>
+						<div class="col-xs-8 col-md-8" ng-if="!$root.Imager.imageList" style="text-align:center;">{{Project.folder}}/image/ 文件夹下无图片。</div>
+					</div> 
+					<div class="row">
+						<center>
+						<ul class="pagination" style="margin-bottom:0;">
+							<li ng-repeat="p in Pager.pageListCurrent" ng-class="{active:p==Pager.pageIndex}"> 
+								<a href="javascript:;" ng-if="p==0" ng-click="Pager.go(p)">&laquo;</a>
+								<a href="javascript:;" ng-if="p==-1" ng-click="Pager.go(p)">&raquo;</a>
+								<a href="javascript:;" ng-if="p!=Pager.pageIndex&&p!=0&&p!=-1" ng-click="Pager.go(p)">{{p}}</a>
+								<span ng-if="p==Pager.pageIndex&&p!=0&&p!=-1">{{p}}</span> 
+							</li>
+						</ul>
+						</center>
+						<!--
+						<pager total="28" size="6"></pager>-->
+						<input type="button" value="刷新" id="refresh" ng-click="refresh()" ng-show="false" />
+					</div> 
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+				</div>
+			</div>
+		</div> 
+	</div>
+	<!--  /Image模态窗  -->
+	
+	<div id="codeTmpl" class="hide" ng-include="'template/product_index.html'"></div> 
+</form>
