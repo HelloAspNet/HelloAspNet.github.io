@@ -1,0 +1,219 @@
+﻿{
+  "module": {
+    "id": 0,
+    "name": "rootModule",
+    "children": [
+      {
+        "name": "moduleName",
+        "template": null,
+        "children": [
+          {
+            "name": "moduleName",
+            "css": {
+              "position": "absolute",
+              "width": "700px",
+              "left": "200px",
+              "top": "350px",
+              "class": "",
+              "style": ""
+            },
+            "templateName": "tmpl_1",
+            "children": [],
+            "id": 100,
+            "use": true,
+            "parameters": {
+              "p1": "3",
+              "k": "2"
+            },
+            "template": {
+              "name": "tmpl_1",
+              "title": "font",
+              "style": {
+                "position": "absolute",
+                "width": "700px",
+                "left:": "150px"
+              },
+              "code": "tmpl_01{{p1}}-{{k}}",
+              "id": 1,
+              "parameters": {
+                "p1": "",
+                "k": ""
+              }
+            }
+          },
+          {
+            "templateName": "tmpl_1",
+            "id": 101,
+            "use": false,
+            "css": {
+              "position": "absolute",
+              "width": "700px",
+              "left": "200px",
+              "top": "350px",
+              "class": "",
+              "style": ""
+            },
+            "parameters": {
+              "p1": "333",
+              "k": ""
+            },
+            "template": {
+              "name": "tmpl_1",
+              "title": "font",
+              "style": {
+                "position": "absolute",
+                "width": "700px",
+                "left": "200px",
+                "top": "150px"
+              },
+              "code": "tmpl_01{{p1}}-{{k}}",
+              "id": 1,
+              "parameters": {
+                "p1": "",
+                "k": ""
+              }
+            }
+          },
+          {
+            "templateName": "tmpl_1",
+            "id": 102,
+            "use": false,
+            "css": {
+              "class": "",
+              "style": "",
+              "position": "absolute",
+              "width": "700px",
+              "left": "200px",
+              "top": "150px"
+            },
+            "parameters": {
+              "p1": "50",
+              "k": "23"
+            },
+            "template": {
+              "name": "tmpl_1",
+              "title": "font",
+              "style": {
+                "position": "absolute",
+                "width": "700px",
+                "left": "200px",
+                "top": "150px"
+              },
+              "code": "tmpl_01{{p1}}-{{k}}",
+              "id": 1,
+              "parameters": {
+                "p1": "",
+                "k": ""
+              }
+            }
+          }
+        ],
+        "id": 1,
+        "use": true,
+        "css": {
+          "class": "ddd",
+          "style": "",
+          "height": "500px",
+          "background": "url(\"image/mjfw_bg1.jpg\") no-repeat;"
+        }
+      },
+      {
+        "id": 2,
+        "use": true,
+        "css": {
+          "class": "",
+          "style": "",
+          "height": "500px",
+          "background": "url(\"image/mjfw_bg2.png\") no-repeat;"
+        },
+        "children": [
+          {
+            "templateName": "tmpl_1",
+            "id": 103,
+            "use": true,
+            "css": {
+              "class": "",
+              "style": "",
+              "position": "absolute",
+              "width": "700px",
+              "left": "200px",
+              "top": "180px"
+            },
+            "parameters": {
+              "p1": "2",
+              "k": "1"
+            },
+            "template": {
+              "name": "tmpl_1",
+              "title": "font",
+              "style": {
+                "position": "absolute",
+                "width": "700px",
+                "left": "200px",
+                "top": "150px"
+              },
+              "code": "tmpl_01{{p1}}-{{k}}",
+              "id": 1,
+              "parameters": {
+                "p1": "",
+                "k": ""
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "template": {
+    "id": 0,
+    "name": "rootTemplate",
+    "children": [
+      {
+        "name": "tmpl_1",
+        "title": "font",
+        "style": {
+          "position": "absolute",
+          "width": "700px",
+          "left": "200px",
+          "top": "150px"
+        },
+        "code": "tmpl_01: p1: {{p1}}, k: {{k}}",
+        "id": 1,
+        "parameters": {
+          "p1": "",
+          "k": ""
+        },
+        "styleText": "{\n  \"position\": \"absolute\",\n  \"width\": \"700px\",\n  \"left\": \"200px\",\n  \"top\": \"150px\"\n}"
+      },
+      {
+        "name": "tmpl_2",
+        "title": "tmpl_2",
+        "style": "",
+        "code": "tmpl_02{{p2=123}}",
+        "id": 2,
+        "parameters": {
+          "p2": "123"
+        },
+        "styleText": "{}"
+      }
+    ]
+  },
+  "banner": {
+    "use": true,
+    "css": {
+      "class": "",
+      "style": "margin-bottom:20px;",
+      "height": "400px",
+      "background": "url(\"image/qilingq-banner.jpg\") no-repeat"
+    }
+  },
+  "main": {
+    "id": 0,
+    "title": "index",
+    "css": {
+      "class": "",
+      "style": "margin:0 auto;",
+      "width": "1210px"
+    }
+  }
+}

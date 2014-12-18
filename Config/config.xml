@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="gb2312" ?>
+<config>
+	<upload>
+		<action>Ashx/Upload.ashx</action>
+		<size>1048576</size>
+		<url>Upload/Other/</url>
+		<filter>['css', 'txt', 'html', 'htm']</filter>
+		<timeout>1000</timeout>
+		<loadcount>20</loadcount>
+	</upload>
+</config>
