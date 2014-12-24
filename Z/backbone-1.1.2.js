@@ -26,7 +26,7 @@
   }
 
 }(this, function(root, Backbone, _, $) {
-	
+    
   // Initial Setup
   // -------------
 
@@ -83,42 +83,42 @@
 
     // Bind an event to a `callback` function. Passing `"all"` will bind
     // the callback to all events fired.
-	//为对象添加事件
-	//name可以是对象，可以是单个事件名，也可以是多个事件名以空格为连接符拼接起来的字符串
+    //为对象添加事件
+    //name可以是对象，可以是单个事件名，也可以是多个事件名以空格为连接符拼接起来的字符串
     on: function(name, callback, context) {
-	  //如果事件添加成功，或者没有回调函数，则返回this 
-	  // /* 这里返回this应该是为了链式操作，不然可以直接返回空，下面没特殊说明的话，则都是这个意思 */
-	  //其实这里，有个递归，因为eventsApi里面，重新调用了on这个方法，而这时候会跳过这个if执行下面的代码
+      //如果事件添加成功，或者没有回调函数，则返回this 
+      // /* 这里返回this应该是为了链式操作，不然可以直接返回空，下面没特殊说明的话，则都是这个意思 */
+      //其实这里，有个递归，因为eventsApi里面，重新调用了on这个方法，而这时候会跳过这个if执行下面的代码
       if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
-	  //这里是给这个eObj添加一个_events属性，用于存储eObj上的所有事件。
+      //这里是给这个eObj添加一个_events属性，用于存储eObj上的所有事件。
       this._events || (this._events = {});
-	  //若_events里未存在该事件，则为_events的该类型事件，定义一个队列，有序的存储新添加进来的事件
-	  //就像是，注册事件吧。
+      //若_events里未存在该事件，则为_events的该类型事件，定义一个队列，有序的存储新添加进来的事件
+      //就像是，注册事件吧。
       var events = this._events[name] || (this._events[name] = []);
-	  //callback就是这个事件的处理函数。
-	  //context是指定的上下文，不一定存在。
-	  //ctx是真正的上下文，或者说运行时的上下文，任何时候都存在
+      //callback就是这个事件的处理函数。
+      //context是指定的上下文，不一定存在。
+      //ctx是真正的上下文，或者说运行时的上下文，任何时候都存在
       events.push({callback: callback, context: context, ctx: context || this});
       return this;
     },
 
     // Bind an event to only be triggered a single time. After the first time
     // the callback is invoked, it will be removed.
-	//类似jquery的one
+    //类似jquery的one
     once: function(name, callback, context) {
-	  //同on
+      //同on
       if (!eventsApi(this, 'once', name, [callback, context]) || !callback) return this;
       var self = this;
-	  //调用_.once方法生成一个只执行一次的函数。
+      //调用_.once方法生成一个只执行一次的函数。
       var once = _.once(function() {
-		//移除name类型的所有事件
+        //移除name类型的所有事件
         self.off(name, once);
-		//执行回调
+        //执行回调
         callback.apply(this, arguments);
       });
-	  //设置_callback属性，保存回调函数，off里面可以根据这个筛选是否当前移除的函数。
+      //设置_callback属性，保存回调函数，off里面可以根据这个筛选是否当前移除的函数。
       once._callback = callback;
-	  //调用on方法添加事件，这个事件只会执行一次。
+      //调用on方法添加事件，这个事件只会执行一次。
       return this.on(name, once, context);
     },
 
@@ -126,42 +126,42 @@
     // callbacks with that function. If `callback` is null, removes all
     // callbacks for the event. If `name` is null, removes all bound
     // callbacks for all events.
-	//移除指定事件。
+    //移除指定事件。
     off: function(name, callback, context) {
       var retain, ev, events, names, i, l, j, k;
-	  //如果存在_events则调用eventsApi移除指定事件，移除成功，直接返回，否则继续下一步。_events不存在时也直接返回
+      //如果存在_events则调用eventsApi移除指定事件，移除成功，直接返回，否则继续下一步。_events不存在时也直接返回
       if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
-	  //如果name、callback、context全部为假，则移除所有事件。
+      //如果name、callback、context全部为假，则移除所有事件。
       if (!name && !callback && !context) {
         this._events = void 0;
         return this;
       }
-	  //建立一个数组，存储所有将要移除的事件名，如果name不存在，则取对象下所有事件名
-	  //(这里说的事件，是指用户添加的事件，非on/off这些事件，下面没有特殊说明，皆是这个意思。)
-	  //而这里name只能是字符串，并且是单个事件名。不能是拼接的事件名。
+      //建立一个数组，存储所有将要移除的事件名，如果name不存在，则取对象下所有事件名
+      //(这里说的事件，是指用户添加的事件，非on/off这些事件，下面没有特殊说明，皆是这个意思。)
+      //而这里name只能是字符串，并且是单个事件名。不能是拼接的事件名。
       names = name ? [name] : _.keys(this._events);
       for (i = 0, l = names.length; i < l; i++) {
         name = names[i];
-		//取得该事件的处理函数，若存在，则进入if条件
+        //取得该事件的处理函数，若存在，则进入if条件
         if (events = this._events[name]) {
-		  //清空该事件的事件队列。
+          //清空该事件的事件队列。
           this._events[name] = retain = [];
-		  //如果有回调或上下文存在(不知道这个上下文存在又能怎样。)
+          //如果有回调或上下文存在(不知道这个上下文存在又能怎样。)
           if (callback || context) {
-			//这个events是清空前的事件队列。
+            //这个events是清空前的事件队列。
             for (j = 0, k = events.length; j < k; j++) {
               ev = events[j];
-			  //如果callback存在，且不与原队列里面的事件相等，且不与原队列事件的_callback属性相等，
-			  //或者是context存在且不与原队列里面的context相等，
-			  //则把事件存到retain里面，这个下面用来判断是否删除整个属性用到，
-			  //不过，除了那里我也不知道它还有哪里用到了，估计以后还有别的用处，例如把事件加回去(猜测)
+              //如果callback存在，且不与原队列里面的事件相等，且不与原队列事件的_callback属性相等，
+              //或者是context存在且不与原队列里面的context相等，
+              //则把事件存到retain里面，这个下面用来判断是否删除整个属性用到，
+              //不过，除了那里我也不知道它还有哪里用到了，估计以后还有别的用处，例如把事件加回去(猜测)
               if ((callback && callback !== ev.callback && callback !== ev.callback._callback) ||
                   (context && context !== ev.context)) {
                 retain.push(ev);
               }
             }
           }
-		  //如果该事件队列的长度为0，即移除了所有事件，则删掉对象_events下的[name]这个属性。
+          //如果该事件队列的长度为0，即移除了所有事件，则删掉对象_events下的[name]这个属性。
           if (!retain.length) delete this._events[name];
         }
       }
@@ -173,18 +173,18 @@
     // passed the same arguments as `trigger` is, apart from the event name
     // (unless you're listening on `"all"`, which will cause your callback to
     // receive the true name of the event as the first argument).
-	//触发指定事件
+    //触发指定事件
     trigger: function(name) {
-	  //如果不存在事件
+      //如果不存在事件
       if (!this._events) return this;
       var args = slice.call(arguments, 1);
-	  //为对象添加trigger事件
+      //为对象添加trigger事件
       if (!eventsApi(this, 'trigger', name, args)) return this;
-	  //获取该类型的事件队列
+      //获取该类型的事件队列
       var events = this._events[name];
-	  //不知道哪里冒出来的all /**********************************/
+      //不知道哪里冒出来的all /**********************************/
       var allEvents = this._events.all;
-	  //如果事件队列存在，则调用triggerEvents方法按顺序触发各个事件处理函数。
+      //如果事件队列存在，则调用triggerEvents方法按顺序触发各个事件处理函数。
       if (events) triggerEvents(events, args);
       if (allEvents) triggerEvents(allEvents, arguments);
       return this;
@@ -192,24 +192,24 @@
 
     // Tell this object to stop listening to either specific events ... or
     // to every object it's currently listening to.
-	//停止监听，不知道这里为什么会有两个Events的实例，this和obj应该都是它的实例。 /************************/
+    //停止监听，不知道这里为什么会有两个Events的实例，this和obj应该都是它的实例。 /************************/
     stopListening: function(obj, name, callback) {
-	  //获取这个eObj上的监听列表
+      //获取这个eObj上的监听列表
       var listeningTo = this._listeningTo;
       if (!listeningTo) return this;
-	  //若name和callback，则为移除的意思。
+      //若name和callback，则为移除的意思。
       var remove = !name && !callback; 
-	  //如果没有回调函数，且name为对象，则把上下文存到callback里传到下面的方法里
+      //如果没有回调函数，且name为对象，则把上下文存到callback里传到下面的方法里
       if (!callback && typeof name === 'object') callback = this;
-	  //如果obj存在，初始化监听列表，
-	  //这个写法有点奇葩，正常应该分开写，即：if (obj) { listeningTo = {}, listeningTo[obj._listenId] = obj; }
+      //如果obj存在，初始化监听列表，
+      //这个写法有点奇葩，正常应该分开写，即：if (obj) { listeningTo = {}, listeningTo[obj._listenId] = obj; }
       if (obj) (listeningTo = {})[obj._listenId] = obj;
-	  //如果这个监听列表存在要监听的对象，这个对象是以【key：id, value: eObj】这样的方式存在listeningTo中的。
+      //如果这个监听列表存在要监听的对象，这个对象是以【key：id, value: eObj】这样的方式存在listeningTo中的。
       for (var id in listeningTo) {
         obj = listeningTo[id];
-		//移除obj的事件
+        //移除obj的事件
         obj.off(name, callback, this);
-		//如果移除条件成立，或obj上没有事件，则移除Events的该条监听属性
+        //如果移除条件成立，或obj上没有事件，则移除Events的该条监听属性
         if (remove || _.isEmpty(obj._events)) delete this._listeningTo[id];
       }
       return this;
@@ -227,13 +227,13 @@
   //一个用来添加或移除事件的方法。(返回true的意思是没有执行任何操作，即没有添加或移除事件，
   //返回false是说明已经成功为obj添加了事件。)
   var eventsApi = function(obj, action, name, rest) {
-	//如果不传事件名，返回true
+    //如果不传事件名，返回true
     if (!name) return true;
 
     // Handle event maps.
-	//如果name是对象，即认为这是多个事件组成的一个对象。则迭代这个对象，去调用obj的action方法给obj添加或移除事件。
-	//比如这个action是on，即是obj.on(eName, eFunc, ctx)。
-	//添加或移除事件后返回false
+    //如果name是对象，即认为这是多个事件组成的一个对象。则迭代这个对象，去调用obj的action方法给obj添加或移除事件。
+    //比如这个action是on，即是obj.on(eName, eFunc, ctx)。
+    //添加或移除事件后返回false
     if (typeof name === 'object') {
       for (var key in name) {
         obj[action].apply(obj, [key, name[key]].concat(rest));
@@ -242,7 +242,7 @@
     }
 
     // Handle space separated event names.
-	//判断这个是不是由多个事件名组成的字符串，是的话，则还是迭代处理它。
+    //判断这个是不是由多个事件名组成的字符串，是的话，则还是迭代处理它。
     if (eventSplitter.test(name)) { 
       var names = name.split(eventSplitter);
       for (var i = 0, l = names.length; i < l; i++) {
@@ -250,9 +250,9 @@
       }
       return false;
     }
-	
-	//若来到这个返回，就说明这个name不是Object类型又不是有效的方法名以空格拼接成的字符串
-	//则，不作处理，返回true
+    
+    //若来到这个返回，就说明这个name不是Object类型又不是有效的方法名以空格拼接成的字符串
+    //则，不作处理，返回true
     return true;
   };
 
@@ -261,10 +261,10 @@
   // Backbone events have 3 arguments).
   //触发队列里的所有事件，以args为参数，这里的events是一个数组，里面的元素是有序的事件处理函数。
   var triggerEvents = function(events, args) {
-	//ev是单个事件，i用来迭代events，a1、a2、a3是传进ev里面的参数。
+    //ev是单个事件，i用来迭代events，a1、a2、a3是传进ev里面的参数。
     var ev, i = -1, l = events.length, a1 = args[0], a2 = args[1], a3 = args[2];
-	//根据参数长度选择不同处理方式， 反正每种方式都要迭代events，执行里面的每个事件的。
-	//不明白为什么不直接用最后一个。。/****************************/
+    //根据参数长度选择不同处理方式， 反正每种方式都要迭代events，执行里面的每个事件的。
+    //不明白为什么不直接用最后一个。。/****************************/
     switch (args.length) {
       case 0: while (++i < l) (ev = events[i]).callback.call(ev.ctx); return;
       case 1: while (++i < l) (ev = events[i]).callback.call(ev.ctx, a1); return;
@@ -283,17 +283,17 @@
   //迭代监听方式，为Events对象添加各个方式的监听处理函数
   //就是说给Events对象添加listenTo和listenToOnce的监听方式，处理的时候为obj添加对应的事件
   _.each(listenMethods, function(implementation, method) { 
-	//这里这个obj其实是Events的一个实例。
+    //这里这个obj其实是Events的一个实例。
     Events[method] = function(obj, name, callback) {
-	  //若Events对象上_listeningTo属性不存在则创建一个监听列表
+      //若Events对象上_listeningTo属性不存在则创建一个监听列表
       var listeningTo = this._listeningTo || (this._listeningTo = {});
-	  //若对象的_listenId不存在，则新建一个前缀为l的唯一id。
+      //若对象的_listenId不存在，则新建一个前缀为l的唯一id。
       var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
-	  //把该obj放到Events的监听列表里，key值为obj的_listenId
+      //把该obj放到Events的监听列表里，key值为obj的_listenId
       listeningTo[id] = obj;
-	  //如果没有回调函数，且name为对象，则把上下文存到callback里传到下面的方法里
+      //如果没有回调函数，且name为对象，则把上下文存到callback里传到下面的方法里
       if (!callback && typeof name === 'object') callback = this;
-	  //以对应的方式为obj添加事件(即添加on方法还是once事件)
+      //以对应的方式为obj添加事件(即添加on方法还是once事件)
       obj[implementation](name, callback, this);
       return this;
     };
@@ -325,8 +325,8 @@
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
-	//_.defaults方法是为第一个对象填充其他对象的属性，但不会覆盖存在的属性。
-	//_.result方法返回this的defaults值，如果this是func，则调用它再去defaults值
+    //_.defaults方法是为第一个对象填充其他对象的属性，但不会覆盖存在的属性。
+    //_.result方法返回this的defaults值，如果this是func，则调用它再去defaults值
     attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
     this.set(attrs, options);
     this.changed = {};
@@ -338,23 +338,27 @@
   _.extend(Model.prototype, Events, {
 
     // A hash of attributes whose current and previous value differ.
+    //这在set方法里面会初始化为一个对象，是用来存储被set方法改变的属性的键值对。
     changed: null,
 
+    //这个是set方法里面能否通过验证的输出信息。若为假，则表示没有验证错误，即通过验证。
     // The value returned during the last failed validation.
     validationError: null,
 
     // The default name for the JSON `id` attribute is `"id"`. MongoDB and
     // CouchDB users may want to set this to `"_id"`.
+    //这是model属性里面存储id用的标识，视情况而定，因为未必每个id名都叫id，或者有_id或者__id之类的。
     idAttribute: 'id',
 
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
+    //这个方法，是用来初始化的，而在这里为一个空函数，则说明是给子类重写用的。
     initialize: function(){},
 
     // Return a copy of the model's `attributes` object.
-	//返回attributes的一份副本
+    //返回attributes的一份副本
     toJSON: function(options) {
-	  //_.clone是浅拷贝
+      //_.clone是浅拷贝
       return _.clone(this.attributes);
     },
 
@@ -365,20 +369,20 @@
     },
 
     // Get the value of an attribute.
-	//获取Model的某个属性
+      //获取Model的某个属性
     get: function(attr) {
       return this.attributes[attr];
     },
 
     // Get the HTML-escaped value of an attribute.
-	//获取Model的某个属性(经过转义的，相应的字符会转成html实体)
+    //获取Model的某个属性(经过转义的，相应的字符会转成html实体)
     escape: function(attr) {
       return _.escape(this.get(attr));
     },
 
     // Returns `true` if the attribute contains a value that is not null
     // or undefined.
-	//判断Model是否包含某个属性
+    //判断Model是否包含某个属性
     has: function(attr) {
       return this.get(attr) != null;
     },
@@ -391,86 +395,128 @@
       if (key == null) return this;
 
       // Handle both `"key", value` and `{key: value}` -style arguments.
+      //如果key是键值对形式的时候
       if (typeof key === 'object') {
         attrs = key;
         options = val;
       } else {
+        //否则key就是字符串的形式
         (attrs = {})[key] = val;
       }
-
+      //若配置不存在，则创建
       options || (options = {});
 
+      //到这里，attrs和options就准备好了
+
       // Run validation.
+      //调用_validate方法，验证attrs和options能否通过验证，不能则直接返回false。
       if (!this._validate(attrs, options)) return false;
 
       // Extract attributes and options.
+      //获取配置里面的某些固定配置(添加属性还是删除属性，要不要触发change事件)。
+      //这个属性表明当前的set操作是添加属性还是移除属性，若unset为真，则为移除。
       unset           = options.unset;
+      //这个属性，是告诉model是否在不触发change的情况下改变属性
       silent          = options.silent;
       changes         = [];
+      //先获取model._changing，判断是否处于【正在修改】的状态。
       changing        = this._changing;
+      //设置model._changing状态为【正在修改】
       this._changing  = true;
-
+      //判断是否在改变，若不在改变，则拷贝一份【原属性】存起来
       if (!changing) {
         this._previousAttributes = _.clone(this.attributes);
         this.changed = {};
       }
+      //获取当前属性和前一次的属性。
       current = this.attributes, prev = this._previousAttributes;
 
       // Check for changes of `id`.
+      //如果新属性对象里面存在model的id属性标记，则将model的id配置为新属性里面的那个，即可以在attrs里面传递参数修改model的id
       if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
 
       // For each `set` attribute, update or delete the current value.
+      //迭代新属性
       for (attr in attrs) {
         val = attrs[attr];
+        //如果当前的属性和将要设置的属性不等价，则把新属性的属性名放到changes数组里
         if (!_.isEqual(current[attr], val)) changes.push(attr);
+        //如果上一次设置的属性和将要设置的属性不等价，则把新属性放到changed对象里，
+        //正常情况下，current和prev两个是一样的，只有当model递归调用set方法才可能造成两个不一样。
+        //这里注意一下，如果current和prev一样说明这是第一次调用set，
+        //若不一样，则是递归调用set，而prev存储的，一定是第一次调用set方法之前的旧的属性。
         if (!_.isEqual(prev[attr], val)) {
+          //如果和原设置不一样，则把新设置放到一个【已改变属性对象(我把changed称为这个)】里
           this.changed[attr] = val;
         } else {
+          //否则，就说明这和没调用set方法之前的旧属性是一样的，则把新添加的属性从【已改变属性对象】中删掉，说明这个属性没有修改。
           delete this.changed[attr];
         }
+        //检查这个固定设置unset，判断是否要设置到model的attributes里。
+        //若unset为真，则删除当前属性值，即相当于移除属性的操作。
         unset ? delete current[attr] : current[attr] = val;
       }
 
       // Trigger all relevant attribute changes.
+      //这个silent翻译是沉默的意思，那silent在这里就是用来判断是否静默设置，静默的意思就是不触发change事件。
       if (!silent) {
+        //如果changes(存的是改变过的新属性的属性名)里面有东西，将配置存到model._pending上。这里就是把options存起来给下面while用。
         if (changes.length) this._pending = options;
+        //迭代调用改变属性的事件，居然是改变每个attr都对应着一个change方法。好大的坑。。
         for (var i = 0, l = changes.length; i < l; i++) {
+          //这里会触发自定义的【change:attrName】事件。
           this.trigger('change:' + changes[i], this, current[changes[i]], options);
         }
       }
 
       // You might be wondering why there's a `while` loop here. Changes can
       // be recursively nested within `"change"` events.
+      //如果还处于【正在修改】状态，
+      //若changing为真，则说明现在调用的这个set方法，是递归里面的set方法(即递归里层的set方法)，
+      //则返回this，等回到最外层递归的时候再去执行下面的，再看是否要触发最终的change。
       if (changing) return this;
+      //执行到这里，就说明回到了递归函数的最外层。
+      //还是那个沉默。
       if (!silent) {
+        //当model._pending存在的时候，获取配置，调用change事件
         while (this._pending) {
           options = this._pending;
           this._pending = false;
           this.trigger('change', this, options);
         }
       }
+      //不沉默是也得把model._pending设为false
       this._pending = false;
+      //改变完毕
       this._changing = false;
       return this;
     },
 
     // Remove an attribute from the model, firing `"change"`. `unset` is a noop
     // if the attribute doesn't exist.
+    //这个是移除指定属性的方法，也可以传silent告诉set方法是否不触发change事件。
+    //擦。。如果先看这里，上面那个set就不用想这么久了。
     unset: function(attr, options) {
       return this.set(attr, void 0, _.extend({}, options, {unset: true}));
     },
 
     // Clear all attributes on the model, firing `"change"`.
+    //清除model上的所有属性。可配置是否触发各种change。
     clear: function(options) {
       var attrs = {};
+      //其实在这里已经清掉了model上的属性了，只是没有移除属性
       for (var key in this.attributes) attrs[key] = void 0;
+      //这个会移除model上的属性，和根据options选择是否触发各种change事件。
       return this.set(attrs, _.extend({}, options, {unset: true}));
     },
 
     // Determine if the model has changed since the last `"change"` event.
     // If you specify an attribute name, determine if that attribute has changed.
+    //判断model的属性是否改变过。可指定属性名。
     hasChanged: function(attr) {
+      //若attr为null或undefined，直接判断【已改变属性对象】(model.changed对象存储改变过的键值对)属性是否为空，是则改变过。
       if (attr == null) return !_.isEmpty(this.changed);
+      //若attr不为空，则判断该属性是否改变过。_.has方法本质就是obj.hasOwnProperty。
       return _.has(this.changed, attr);
     },
 
@@ -480,12 +526,22 @@
     // persisted to the server. Unset attributes will be set to undefined.
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
+    //1、若不传参数，则获取model上【已改变属性对象】
+    //2、若传进一个属性键值对象，则返回该对象与【旧属性对象】不同的属性键值组成的对象。
+    //比如，想设置diff属性到model上，可以先用这个方法确定diff中有哪些是不同于旧属性的，再设置这些不同的属性即可。
+    //不知道这在实际运用中，会在哪些地方用得上。
     changedAttributes: function(diff) {
+      //如果diff为假，分两种情况：
+      //  1、model属性改变过，则返回【已改变属性对象】的副本
+      //  2、model属性没改变过，返回false
       if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
       var val, changed = false;
+      //获取旧属性，_changing表明model是否处于正在修改属性的状态
       var old = this._changing ? this._previousAttributes : this.attributes;
       for (var attr in diff) {
+        //若旧属性和传进来的属性同属性名下属性相等，则继续下次循环
         if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+        //不等则保存到changed对象上
         (changed || (changed = {}))[attr] = val;
       }
       return changed;
@@ -493,6 +549,9 @@
 
     // Get the previous value of an attribute, recorded at the time the last
     // `"change"` event was fired.
+    //获取修改前的旧属性，可指定具体某个。
+    //感觉这里不用副本，可能在某些情况下会有点问题(其实很多方法(如previousAttributes)里用浅拷贝_.clone也是会有这个隐患)，
+    //比如这个属性的值是对象或数组，那就可能错误的把它给改掉。
     previous: function(attr) {
       if (attr == null || !this._previousAttributes) return null;
       return this._previousAttributes[attr];
@@ -500,6 +559,7 @@
 
     // Get all of the attributes of the model at the time of the previous
     // `"change"` event.
+    //获取旧属性的副本。
     previousAttributes: function() {
       return _.clone(this._previousAttributes);
     },
@@ -507,17 +567,24 @@
     // Fetch the model from the server. If the server's representation of the
     // model differs from its current attributes, they will be overridden,
     // triggering a `"change"` event.
+    //
     fetch: function(options) {
       options = options ? _.clone(options) : {};
       if (options.parse === void 0) options.parse = true;
       var model = this;
       var success = options.success;
+      //把options里面的回调重新封装。
       options.success = function(resp) {
+        //这里model先调用parse处理返回的请求，再把对应属性设置到model上
         if (!model.set(model.parse(resp, options), options)) return false;
+        //如果原来有在options里定义回调函数，则执行该回调。
         if (success) success(model, resp, options);
+        //调用model的sync方法。。/*******************************************************************************/
         model.trigger('sync', model, resp, options);
       };
+      //包装【error函数】，其实和上面包装success的方法类似，目的是使它触发model的error方法
       wrapError(this, options);
+      //调用sync方法并返回。/* 里面调用了model的request方法。这个方法也是需要自己写的 */
       return this.sync('read', this, options);
     },
 
@@ -622,6 +689,7 @@
 
     // **parse** converts a response into the hash of attributes to be `set` on
     // the model. The default implementation is just to pass the response along.
+    //处理响应，这里直接返回，应该是说默认直接返回响应内容，可重写这个方法。
     parse: function(resp, options) {
       return resp;
     },
@@ -643,12 +711,22 @@
 
     // Run validation against the next complete set of model attributes,
     // returning `true` if all is well. Otherwise, fire an `"invalid"` event.
+    //验证set的属性是否能通过验证，
+    //验证方法validate和验证不通过时的处理方法invalid都是要自己设置的。
+    //validate(attrs, options) 这里需要返回值，true或false，不通过验证时返回true
+    //invalid(errorInfo, options)
     _validate: function(attrs, options) {
+      //如果配置项的validate为假或者model不存在validate验证方法，则说明不需要验证，直接返回true通过验证。
       if (!options.validate || !this.validate) return true;
+      //合并属性
       attrs = _.extend({}, this.attributes, attrs);
+      //调用model的验证方法返回验证后错误信息，存到model.validationError上
       var error = this.validationError = this.validate(attrs, options) || null;
+      //如果验证没有错误，则返回true通过验证。
       if (!error) return true;
+      //执行到这里，说明不通过验证，调用自定义的invalid方法
       this.trigger('invalid', this, error, _.extend(options, {validationError: error}));
+      //验证不通过时返回false
       return false;
     }
 
@@ -1210,10 +1288,13 @@
   // instead of `application/json` with the model in a param named `model`.
   // Useful when interfacing with server-side languages like **PHP** that make
   // it difficult to read the body of `PUT` requests.
+  //Backbone的同步调用方法。不知道这里为什么叫同步。。
   Backbone.sync = function(method, model, options) {
+    //从methodMap里获取正确的请求类型
     var type = methodMap[method];
 
     // Default options, unless specified.
+    //为options填充emulateHTTP和emulateJSON属性，若存在则不会填充。
     _.defaults(options || (options = {}), {
       emulateHTTP: Backbone.emulateHTTP,
       emulateJSON: Backbone.emulateJSON
@@ -1276,6 +1357,7 @@
       !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
 
   // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
+  //设置action真实对应的请求类型
   var methodMap = {
     'create': 'POST',
     'update': 'PUT',
@@ -1676,6 +1758,7 @@
   };
 
   // Wrap an optional error callback with a fallback error event.
+  //重新封装自定义的错误处理程序，使之触发model的error方法。
   var wrapError = function(model, options) {
     var error = options.error;
     options.error = function(resp) {
