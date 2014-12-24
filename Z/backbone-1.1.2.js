@@ -1294,23 +1294,28 @@
     var type = methodMap[method];
 
     // Default options, unless specified.
-    //为options填充emulateHTTP和emulateJSON属性，若存在则不会填充。
+    //为options填充emulateHTTP和emulateJSON属性，若存在则不会填充。(找了一下，这两个属性都是false)
     _.defaults(options || (options = {}), {
       emulateHTTP: Backbone.emulateHTTP,
       emulateJSON: Backbone.emulateJSON
     });
 
     // Default JSON-request options.
+    //定义xhr的配置
     var params = {type: type, dataType: 'json'};
 
     // Ensure that we have a URL.
+    //若options里不存在url，则获取对象上的url作为xhr的url
     if (!options.url) {
       params.url = _.result(model, 'url') || urlError();
     }
 
     // Ensure that we have the appropriate request data.
+    //如果data为undefined或null，且model存在且调用的方法是【create/update/patch】其中一种。
+    //则设置xhr的contentType和data
     if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
       params.contentType = 'application/json';
+      //options的attrs存在则将attrs设置为data，不存在则把options设置为data
       params.data = JSON.stringify(options.attrs || model.toJSON(options));
     }
 
@@ -1753,6 +1758,7 @@
   Model.extend = Collection.extend = Router.extend = View.extend = History.extend = extend;
 
   // Throw an error when a URL is needed, and none is supplied.
+  //xhr里面没有指定url时候的错误提示
   var urlError = function() {
     throw new Error('A "url" property or function must be specified');
   };
