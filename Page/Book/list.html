@@ -1,0 +1,20 @@
+<div class="container">
+	<table>
+		<tr>
+			<td>id</td>
+			<td>name</td>
+			<td>author</td>
+			<td>price</td>
+			<td>description</td>
+			<td>operator</td>
+		</tr>
+		<tr ng-repeat="book in bookList">
+			<td ng-bind="id"></td>
+			<td ng-bind="name"></td>
+			<td ng-bind="author"></td>
+			<td ng-bind="price"></td>
+			<td ng-bind="description"></td>
+			<td><input type="button" value="Button" /></td>
+		</tr>
+	</table>
+</div>
