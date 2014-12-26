@@ -45,6 +45,7 @@
 
   // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
   // the `$` variable.
+  //把【jquery/zepto/ender】的$挂到Backbone下。
   Backbone.$ = $;
 
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
@@ -324,6 +325,7 @@
     this.cid = _.uniqueId('c');
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
+    //传递这个parse参数(true或false)，确定是否要调用model的parse事件解析attrs
     if (options.parse) attrs = this.parse(attrs, options) || {};
     //_.defaults方法是为第一个对象填充其他对象的属性，但不会覆盖存在的属性。
     //_.result方法返回this的defaults值，如果this是func，则调用它再去defaults值
@@ -364,6 +366,7 @@
 
     // Proxy `Backbone.sync` by default -- but override this if you need
     // custom syncing semantics for *this* particular model.
+    //以model为对象调用Backbone的sync方法返回一个xhr
     sync: function() {
       return Backbone.sync.apply(this, arguments);
     },
@@ -567,9 +570,11 @@
     // Fetch the model from the server. If the server's representation of the
     // model differs from its current attributes, they will be overridden,
     // triggering a `"change"` event.
-    //
+    //通过ajax读取数据。方法是read(实际上是get)，返回xhr供链式使用，也可以在options里配置好success方法。
     fetch: function(options) {
+      //若options存在，拷贝一份，使后面的操作不影响原来的options
       options = options ? _.clone(options) : {};
+      //如果没传parse这个属性，则设为true，告诉model默认是要用model.parse来解析数据
       if (options.parse === void 0) options.parse = true;
       var model = this;
       var success = options.success;
@@ -579,55 +584,83 @@
         if (!model.set(model.parse(resp, options), options)) return false;
         //如果原来有在options里定义回调函数，则执行该回调。
         if (success) success(model, resp, options);
-        //调用model的sync方法。。/*******************************************************************************/
+        //这才是真正的调用model的sync方法做ajax请求
         model.trigger('sync', model, resp, options);
       };
       //包装【error函数】，其实和上面包装success的方法类似，目的是使它触发model的error方法
       wrapError(this, options);
-      //调用sync方法并返回。/* 里面调用了model的request方法。这个方法也是需要自己写的 */
+      //这里model调用自己的sync方法返回一个真实的xhr
+      //这个return是使model.fetch().success()可以这样链式的操作下去，而不一定要写成model.fetch({success:function(){}})的形式，
+      //其实都是会调用上面的success方法，触发真正的回调。
+      //这个就要根据【jquery/zepto/ender】返回的xhr来看了，因为没看过它们源码，仅仅感觉是这样。
+      //若不支持链式的这个应该是废的。
       return this.sync('read', this, options);
     },
 
     // Set a hash of model attributes, and sync the model to the server.
     // If the server returns an attributes hash that differs, the model's
     // state will be `set` again.
+    //保存数据到服务器，这里的数据指model的属性。
     save: function(key, val, options) {
       var attrs, method, xhr, attributes = this.attributes;
 
       // Handle both `"key", value` and `{key: value}` -style arguments.
+      //针对第一个key为null或是Object的情况，这种情况只能有两个参数。
       if (key == null || typeof key === 'object') {
         attrs = key;
         options = val;
       } else {
+        //否则，按常规设置
         (attrs = {})[key] = val;
       }
 
+      //这里传一个validate只是为了防止出现options里面没写validate的情况
+      //这里一开始没有拷贝一份options是因为这个options会改变，而且想在调用save之后用户看到改变后的options
       options = _.extend({validate: true}, options);
 
       // If we're not waiting and attributes exist, save acts as
       // `set(attr).save(null, opts)` with validation. Otherwise, check if
       // the model will be valid when the attributes, if any, are set.
+      //这里根据options.wait来判断设置属性是否需要等待，
+      //等待的意思是，先验证不设置，之后根据其他情况再做设置。
+      //其实有那么几种情况：
+      //  1、需要验证，需要等待，则先验证，不设置，验证失败时直接返回
+      //  2、需要验证，无需等待，则直接设置，验证失败时直接返回
+      //  3、不需要验证，需要等待，则直接设置，必然不会返回
+      //  4、不需要验证，不需要等待，则完全可以忽略这个验证，继续下一步
       if (attrs && !options.wait) {
+        //不需要等待则直接设置，若验证失败会返回false
         if (!this.set(attrs, options)) return false;
       } else {
+        //若需要等待则先做验证，验证失败也是直接返回false。
         if (!this._validate(attrs, options)) return false;
       }
 
+      //反正到这里肯定就是通过验证了。
+
       // Set temporary attributes if `{wait: true}`.
+      //这是针对上面的【情况1】和【情况3】做的处理，其实说白点是对【情况3】做处理，因为【情况1】，上面已经设置过了，这里应该无需重新再设置。
       if (attrs && options.wait) {
         this.attributes = _.extend({}, attributes, attrs);
       }
 
       // After a successful server-side save, the client is (optionally)
       // updated with the server-side state.
+      //翻译：服务器端保存成功后,客户端与服务器端状态(可选)更新。
       if (options.parse === void 0) options.parse = true;
       var model = this;
+      //这里的操作和fetch的差不多。
       var success = options.success;
       options.success = function(resp) {
         // Ensure attributes are restored during synchronous saves.
+        //翻译：确保属性恢复期间同步保存。
+        //不太明白这个是用来干嘛的。。为什么要恢复呢
         model.attributes = attributes;
+        //根据不同的服务器返回值做不同处理，提取attrs
         var serverAttrs = model.parse(resp, options);
+        //如果需要等待，则先取得属性，暂时不设置到model上
         if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
+        //如果处理后的serverAttrs是一个对象且不能通过验证，则返回
         if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
           return false;
         }
@@ -635,12 +668,17 @@
         model.trigger('sync', model, resp, options);
       };
       wrapError(this, options);
-
+      //如果model是新的，这里说的新是指还没存在于数据库的，因为存在于数据库的话一定要生成
+      //一个id字段，即idAttribute这个字段一定有值(即这里isNew方法的判断依据)。
+      //若是新的，则设置action为create，若不是，再判断是否为patch，这里update实际是put
       method = this.isNew() ? 'create' : (options.patch ? 'patch' : 'update');
+      //如果是打补丁，则将之前【通过验证设置好的】或者【没通过验证原有的】attrs设置到options上
+      //反正就是，设置好options.attrs属性，因为sync那边要拿这个属性作为传输的数据。
       if (method === 'patch') options.attrs = attrs;
       xhr = this.sync(method, this, options);
 
       // Restore attributes.
+      //只有等待的才会进入这里，在这里恢复attributes，留待给用户进行后续操作。
       if (attrs && options.wait) this.attributes = attributes;
 
       return xhr;
@@ -649,28 +687,35 @@
     // Destroy this model on the server if it was already persisted.
     // Optimistically removes the model from its collection, if it has one.
     // If `wait: true` is passed, waits for the server to respond before removal.
+    //
     destroy: function(options) {
       options = options ? _.clone(options) : {};
       var model = this;
       var success = options.success;
 
+      //这个应该是从model.collection里面销毁model
       var destroy = function() {
         model.trigger('destroy', model, model.collection, options);
       };
 
       options.success = function(resp) {
+        //这个不理解了，如果【需要等待】且model是新的，销毁model /*******这里不应该是需要等待吧，是不需要等待的吧***********/
         if (options.wait || model.isNew()) destroy();
         if (success) success(model, resp, options);
+        //如果模型不是新的，就是说它已经存在于数据库，则通过ajax请求从数据库里面删掉。
         if (!model.isNew()) model.trigger('sync', model, resp, options);
       };
 
+      //如果model是新的，直接调用success，返回false还不知道是什么意思 /***********************/
       if (this.isNew()) {
         options.success();
         return false;
       }
       wrapError(this, options);
 
+      //调用model.sync返回一个delete的xhr
       var xhr = this.sync('delete', this, options);
+      //如果无需等待，则调用destroy销毁model，否则，返回xhr给用户自行根据情况销毁
       if (!options.wait) destroy();
       return xhr;
     },
@@ -700,6 +745,7 @@
     },
 
     // A model is new if it has never been saved to the server, and lacks an id.
+    //判断这个model是否从未在服务求上保存过，它是根据model是否存在这个idAttribute属性(这个属性是存储id字段的字段名的)来判断的
     isNew: function() {
       return !this.has(this.idAttribute);
     },
@@ -1288,13 +1334,16 @@
   // instead of `application/json` with the model in a param named `model`.
   // Useful when interfacing with server-side languages like **PHP** that make
   // it difficult to read the body of `PUT` requests.
-  //Backbone的同步调用方法。不知道这里为什么叫同步。。
+  //Backbone的异步调用方法。不知道这里为什么名字叫同步。。明明真实调用的是别的库的ajax方法。
+  //其实这里就相当于一个，一个适配器之类的东西吧。。
   Backbone.sync = function(method, model, options) {
     //从methodMap里获取正确的请求类型
     var type = methodMap[method];
 
     // Default options, unless specified.
     //为options填充emulateHTTP和emulateJSON属性，若存在则不会填充。(找了一下，这两个属性都是false)
+    //这个emulateHTTP和emulateJSON是判断request是否模仿http和data是否模仿json
+    //emulateHTTP若是为true，则【put/delete/patch】都会改回post
     _.defaults(options || (options = {}), {
       emulateHTTP: Backbone.emulateHTTP,
       emulateJSON: Backbone.emulateJSON
@@ -1312,7 +1361,8 @@
 
     // Ensure that we have the appropriate request data.
     //如果data为undefined或null，且model存在且调用的方法是【create/update/patch】其中一种。
-    //则设置xhr的contentType和data
+    //则设置xhr的contentType和data为json格式和json格式的字符串
+    //具体请参考：https://www.imququ.com/post/four-ways-to-post-data-in-http.html
     if (options.data == null && model && (method === 'create' || method === 'update' || method === 'patch')) {
       params.contentType = 'application/json';
       //options的attrs存在则将attrs设置为data，不存在则把options设置为data
@@ -1320,6 +1370,13 @@
     }
 
     // For older servers, emulate JSON by encoding the request into an HTML-form.
+    //这里就是说，如果模仿json。则设置为下面这种类型，并且将data封装成一个Object类型。
+    //application/x-www-form-urlencoded这种类型会将【窗体数据被编码为名称/值对】
+    //网上说，如果form在get的时候，会把数据转成(name1=value1&name2=value2..)这种形式，
+    //post时，浏览器把form数据封装到http body中，然后发送到server，
+    //若form内不存在type=file，默认用urlencoded那样转换数据就可以了，若存在，则要用multipart/form-data，
+    //浏览器会把整个表单以控件为单位分割，并为每个部分加上Content-Disposition(form-data或者file),
+    //Content-Type(默认为text/plain),name(控件name)等信息，并加上分割符(boundary)。
     if (options.emulateJSON) {
       params.contentType = 'application/x-www-form-urlencoded';
       params.data = params.data ? {model: params.data} : {};
@@ -1327,9 +1384,14 @@
 
     // For older servers, emulate HTTP by mimicking the HTTP method with `_method`
     // And an `X-HTTP-Method-Override` header.
+    //如果是模仿http，且类型为【put/delete/patch】中的一个，则实际上是用post的方式提交的
     if (options.emulateHTTP && (type === 'PUT' || type === 'DELETE' || type === 'PATCH')) {
       params.type = 'POST';
+      //如果要模仿json，则设置data._method为put
       if (options.emulateJSON) params.data._method = type;
+      //这里对原来的beforeSend事件重新封装了一下。
+      //即如果在【put/delete/patch】的情况下，需要重写beforeSend方法，
+      //在里面修改contentType为X-HTTP-Method-Override，再执行原来的beforeSend
       var beforeSend = options.beforeSend;
       options.beforeSend = function(xhr) {
         xhr.setRequestHeader('X-HTTP-Method-Override', type);
@@ -1338,6 +1400,7 @@
     }
 
     // Don't process data on a non-GET request.
+    //这里应该是说，不要对不是get方法的请求做缓存之类的吧。/* 暂时不是很确定 */
     if (params.type !== 'GET' && !options.emulateJSON) {
       params.processData = false;
     }
@@ -1345,6 +1408,7 @@
     // If we're sending a `PATCH` request, and we're in an old Internet Explorer
     // that still has ActiveX enabled by default, override jQuery to use that
     // for XHR instead. Remove this line when jQuery supports `PATCH` on IE8.
+    //若类型时patch，且该环境xhr只支持用ActiveXObject的方式。则重设xhr。
     if (params.type === 'PATCH' && noXhrPatch) {
       params.xhr = function() {
         return new ActiveXObject("Microsoft.XMLHTTP");
@@ -1352,17 +1416,22 @@
     }
 
     // Make the request, allowing the user to override any Ajax options.
+    //调用Backbone.ajax返回一个xhr
     var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
+    //若发送了request，则告诉model触发一下request事件。这里的request是自己定义的。
+    //只是说，在发送请求的时候，它会帮你触发一下request事件，让你可以做出对应操作
     model.trigger('request', model, xhr, options);
     return xhr;
   };
 
+  //这个是用来检测是否在不支持XMLHttpRequest但支持ActiveXObject的window环境下。
+  //说的好复杂，就是判断当前是否在只支持ActiveXObject的IE上吧。。
   var noXhrPatch =
     typeof window !== 'undefined' && !!window.ActiveXObject &&
       !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
 
   // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
-  //设置action真实对应的请求类型
+  //设置action真实对应的请求类型，其实这个可能还不是最终request时的类型，比如【put/patch/delete】这些类型，在模仿http的情况下会转成post
   var methodMap = {
     'create': 'POST',
     'update': 'PUT',
@@ -1373,6 +1442,7 @@
 
   // Set the default implementation of `Backbone.ajax` to proxy through to `$`.
   // Override this if you'd like to use a different library.
+  //调用【jquery/zepto/ender】的ajax方法，返回一个xhr。
   Backbone.ajax = function() {
     return Backbone.$.ajax.apply(Backbone.$, arguments);
   };
@@ -1382,6 +1452,7 @@
 
   // Routers map faux-URLs to actions, and fire events when routes are
   // matched. Creating a new one sets its `routes` hash, if not set statically.
+  //
   var Router = Backbone.Router = function(options) {
     options || (options = {});
     if (options.routes) this.routes = options.routes;
