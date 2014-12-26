@@ -706,7 +706,7 @@
         if (!model.isNew()) model.trigger('sync', model, resp, options);
       };
 
-      //如果model是新的，直接调用success，返回false还不知道是什么意思 /***********************/
+      //如果model是新的，直接调用success，返回，false还不知道是什么意思 /***********************/
       if (this.isNew()) {
         options.success();
         return false;
