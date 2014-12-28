@@ -320,18 +320,29 @@
   // Create a new model with the specified attributes. A client id (`cid`)
   // is automatically generated and assigned for you.
   var Model = Backbone.Model = function(attributes, options) {
+    //这个是实例时默认设置的属性
     var attrs = attributes || {};
+    //options为假时创建新对象，也就是平时写的options = options || {}
     options || (options = {});
+    //这个应该是给model分配的一个唯一id
     this.cid = _.uniqueId('c');
+    //创建一个新属性对象，用来存model的属性。
     this.attributes = {};
+    //如果options有指定collection，则设置为model的collection，这个应该是指明这个model属于哪个collection用的
     if (options.collection) this.collection = options.collection;
-    //传递这个parse参数(true或false)，确定是否要调用model的parse事件解析attrs
+    //传递这个parse参数(true或false)，确定是否要调用model的parse事件解析attrs，
+    //其实这个model.parse方法，应该是要在还没实例model的时候先对Model.prototype.parse重写的，
+    //不然的话，在这里调用这个方法的意义就不是很大了。
     if (options.parse) attrs = this.parse(attrs, options) || {};
     //_.defaults方法是为第一个对象填充其他对象的属性，但不会覆盖存在的属性。
-    //_.result方法返回this的defaults值，如果this是func，则调用它再去defaults值
+    //_.result方法返回this的defaults值，如果this是func，则调用它再去defaults值，
+    //但不知道这个model.defaults是在哪里定义的，始终没发现。难道也是留给用户自定义的？扩展空间也真够大的。
     attrs = _.defaults({}, attrs, _.result(this, 'defaults'));
+    //设置属性
     this.set(attrs, options);
+    //实例化时，改变的属性当然要重置成空对象，毕竟是第一次。
     this.changed = {};
+    //初始化，这个，又是一个空函数，等着你去重写的。
     this.initialize.apply(this, arguments);
   };
 
@@ -343,8 +354,8 @@
     //这在set方法里面会初始化为一个对象，是用来存储被set方法改变的属性的键值对。
     changed: null,
 
-    //这个是set方法里面能否通过验证的输出信息。若为假，则表示没有验证错误，即通过验证。
     // The value returned during the last failed validation.
+    //这个是set方法里面能否通过验证的输出信息。若为假，则表示没有验证错误，即通过验证。
     validationError: null,
 
     // The default name for the JSON `id` attribute is `"id"`. MongoDB and
@@ -372,7 +383,7 @@
     },
 
     // Get the value of an attribute.
-      //获取Model的某个属性
+    //获取Model的某个属性
     get: function(attr) {
       return this.attributes[attr];
     },
@@ -393,6 +404,7 @@
     // Set a hash of model attributes on the object, firing `"change"`. This is
     // the core primitive operation of a model, updating the data and notifying
     // anyone who needs to know about the change in state. The heart of the beast.
+    //为model设置属性的方法。移除属性也是在这里了。unset是区分设置和移除的一个标志。
     set: function(key, val, options) {
       var attr, attrs, unset, changes, silent, changing, prev, current;
       if (key == null) return this;
@@ -687,7 +699,9 @@
     // Destroy this model on the server if it was already persisted.
     // Optimistically removes the model from its collection, if it has one.
     // If `wait: true` is passed, waits for the server to respond before removal.
-    //
+    //这是一个删除model的方法。
+    //读到这里突然想到，这，如果ajax的options里面有success方法，且后面又链有success方法，那这两个方法
+    //是否都会执行呢？还没真正去验证过，暂时放到读完再试试。。很好奇。。
     destroy: function(options) {
       options = options ? _.clone(options) : {};
       var model = this;
@@ -703,10 +717,11 @@
         if (options.wait || model.isNew()) destroy();
         if (success) success(model, resp, options);
         //如果模型不是新的，就是说它已经存在于数据库，则通过ajax请求从数据库里面删掉。
+        //其实为什么这里才判断这个呢？这个时候用户定义的success函数已经执行了。那下面这个操作如果失败了该怎么办？
         if (!model.isNew()) model.trigger('sync', model, resp, options);
       };
 
-      //如果model是新的，直接调用success，返回，false还不知道是什么意思 /***********************/
+      //如果model是新的，直接调用success，返回。false还不知道是什么意思 /***********************/
       if (this.isNew()) {
         options.success();
         return false;
@@ -723,6 +738,7 @@
     // Default URL for the model's representation on the server -- if you're
     // using Backbone's restful methods, override this to change the endpoint
     // that will be called.
+    //
     url: function() {
       var base =
         _.result(this, 'urlRoot') ||
@@ -740,6 +756,8 @@
     },
 
     // Create a new model with identical attributes to this one.
+    //创建一个有相同属性的model
+    //也就是把当前model的属性作为参数重新实例化一个Model对象，但为什么不传options？因为没存optiongs？
     clone: function() {
       return new this.constructor(this.attributes);
     },
@@ -751,6 +769,7 @@
     },
 
     // Check if the model is currently in a valid state.
+    //调用验证方法，返回是否能通过验证。
     isValid: function(options) {
       return this._validate({}, _.extend(options || {}, { validate: true }));
     },
@@ -779,12 +798,15 @@
   });
 
   // Underscore methods that we want to implement on the Model.
+  //这里说的是准备为model扩展underscore的下面这些方法。
   var modelMethods = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
 
   // Mix in each Underscore method as a proxy to `Model#attributes`.
+  //为model集成【_】的部分方法，model的属性为默认要操作的对象。
   _.each(modelMethods, function(method) {
     Model.prototype[method] = function() {
       var args = slice.call(arguments);
+      //把属性插入数组开头，作为默认要操作的数组对象。
       args.unshift(this.attributes);
       return _[method].apply(_, args);
     };
@@ -805,10 +827,15 @@
   // its models in sort order, as they're added and removed.
   var Collection = Backbone.Collection = function(models, options) {
     options || (options = {});
+    //
     if (options.model) this.model = options.model;
+    //
     if (options.comparator !== void 0) this.comparator = options.comparator;
+    //重置collection
     this._reset();
+    //初始化collection，同样这里也是供人重写的。
     this.initialize.apply(this, arguments);
+    //
     if (models) this.reset(models, _.extend({silent: true}, options));
   };
 
@@ -829,11 +856,14 @@
 
     // The JSON representation of a Collection is an array of the
     // models' attributes.
+    //返回一个clt，clt里面每个model都是原来model的副本，
+    //这个方法，配上这个名字还真不好理解，有点蒙了。真不知它哪点是toJSON的意思。。
     toJSON: function(options) {
       return this.map(function(model){ return model.toJSON(options); });
     },
 
     // Proxy `Backbone.sync` by default.
+    //调用Backbone.sync返回一个xhr
     sync: function() {
       return Backbone.sync.apply(this, arguments);
     },
@@ -845,18 +875,27 @@
 
     // Remove a model, or a list of models from the set.
     remove: function(models, options) {
+      //判断非数组的一个标识
       var singular = !_.isArray(models);
       models = singular ? [models] : _.clone(models);
       options || (options = {});
       var i, l, index, model;
       for (i = 0, l = models.length; i < l; i++) {
+        //调用get方法，获取clt上与传入对象匹配的model
         model = models[i] = this.get(models[i]);
+        //不存在当然跳过这个循环
         if (!model) continue;
+        //从这个_byId对象上删除指定属性，
+        //这里总觉得有点问题，若model同时有id和cid，那会不会造成误删了别的model在_byId上的键值索引？
         delete this._byId[model.id];
         delete this._byId[model.cid];
+        //这里取model在clt.models上的索引，其实就是【_】里面的indexOf方法。
         index = this.indexOf(model);
+        //把这个model从models里面截取出来。
         this.models.splice(index, 1);
+        //对应的length也要变化
         this.length--;
+        //如果不是静默模式，则触发model的remove事件
         if (!options.silent) {
           options.index = index;
           model.trigger('remove', model, this, options);
@@ -965,6 +1004,7 @@
     // any granular `add` or `remove` events. Fires `reset` when finished.
     // Useful for bulk operations and optimizations.
     reset: function(models, options) {
+      //感觉这句有点多余咯，毕竟在实例里面才刚写过这句。
       options || (options = {});
       for (var i = 0, l = this.models.length; i < l; i++) {
         this._removeReference(this.models[i], options);
@@ -977,23 +1017,28 @@
     },
 
     // Add a model to the end of the collection.
+    //添加model到clt.models尾部。
     push: function(model, options) {
       return this.add(model, _.extend({at: this.length}, options));
     },
 
     // Remove a model from the end of the collection.
+    //移除clt.models最后一个model，并返回该model
     pop: function(options) {
+      //因为model.length始终保持和models.length相等的
       var model = this.at(this.length - 1);
       this.remove(model, options);
       return model;
     },
 
     // Add a model to the beginning of the collection.
+    //把model添加到clt.models的开头。
     unshift: function(model, options) {
       return this.add(model, _.extend({at: 0}, options));
     },
 
     // Remove a model from the beginning of the collection.
+    //移除clt.models的第一个model，并返回。
     shift: function(options) {
       var model = this.at(0);
       this.remove(model, options);
@@ -1001,17 +1046,20 @@
     },
 
     // Slice out a sub-array of models from the collection.
+    //返回clt中指定范围内的model，因为model都在models的数组中，所以这样取。
     slice: function() {
       return slice.apply(this.models, arguments);
     },
 
     // Get a model from the set by id.
+    //根据id查找model，可直接传id，或带id的对象，或带cid的对象
     get: function(obj) {
       if (obj == null) return void 0;
       return this._byId[obj] || this._byId[obj.id] || this._byId[obj.cid];
     },
 
     // Get the model at the given index.
+    //根据索引找model
     at: function(index) {
       return this.models[index];
     },
@@ -1053,7 +1101,9 @@
     },
 
     // Pluck an attribute from each model in the collection.
+    //返回所有model的某个属性值组成的数组。
     pluck: function(attr) {
+      //_.invoke就是相当于迭代models，调用get方法，参数就是attr，而所有返回值会组成一个数组。
       return _.invoke(this.models, 'get', attr);
     },
 
@@ -1094,17 +1144,23 @@
 
     // **parse** converts a response into a list of models to be added to the
     // collection. The default implementation is just to pass it through.
+    //这个。。和model.parse一样。一般用于处理服务端返回的数据用的。。
+    //不重写的话，就不做任何改变。
     parse: function(resp, options) {
       return resp;
     },
 
     // Create a new collection with an identical list of models as this one.
+    //创建一个clt的副本。
     clone: function() {
       return new this.constructor(this.models);
     },
 
     // Private method to reset all internal state. Called when the collection
     // is first initialized or reset.
+    //实例时重置collection的长度，models，_byId。
+    //models当然是拿来放model的数组啦。
+    //_byId应该是一个以id和model为键值的对象，用于根据id找model的。
     _reset: function() {
       this.length = 0;
       this.models = [];
@@ -1133,6 +1189,8 @@
 
     // Internal method to sever a model's ties to a collection.
     _removeReference: function(model, options) {
+      //如果model的collection是当前clt，则删除model.collection，
+      //大概意思就是删除model和clt之间的联系。。
       if (this === model.collection) delete model.collection;
       model.off('all', this._onModelEvent, this);
     },
@@ -1164,6 +1222,7 @@
     'lastIndexOf', 'isEmpty', 'chain', 'sample'];
 
   // Mix in each Underscore method as a proxy to `Collection#models`.
+  //为Collection扩展方法
   _.each(methods, function(method) {
     Collection.prototype[method] = function() {
       var args = slice.call(arguments);
