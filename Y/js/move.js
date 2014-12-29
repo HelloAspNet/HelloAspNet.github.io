@@ -13,10 +13,8 @@ Move.prototype = {
 
       speed = speed > 0 ? Math.ceil(speed) : Math.floor(speed);
 
-      if (begin == end) {
+      if (begin >= end) {
         clearInterval(obj.timer);
-
-
       } else {
         if (attr == 'opacity') {
           obj.style.filter = 'alpha(opacity=' + begin + speed + ')';
