@@ -874,6 +874,7 @@
     },
 
     // Remove a model, or a list of models from the set.
+    //从clt里移除model(单个对象或数组)，options可以配置是否不触发对应的事件。
     remove: function(models, options) {
       //判断非数组的一个标识
       var singular = !_.isArray(models);
@@ -900,8 +901,10 @@
           options.index = index;
           model.trigger('remove', model, this, options);
         }
+        //移除clt和model之间的相互引用
         this._removeReference(model, options);
       }
+      //返回移除的model
       return singular ? models[0] : models;
     },
 
@@ -909,38 +912,66 @@
     // removing models that are no longer present, and merging models that
     // already exist in the collection, as necessary. Similar to **Model#set**,
     // the core operation for updating the data contained by the collection.
+    //
+    //  models = Model/[Model, ..]
+    //  options = {
+    //    parse: b,
+    //    at: iIndex,
+    //    sort: b,
+    //    add: b,
+    //    merge: b,
+    //    remove: b
+    //  }
     set: function(models, options) {
       options = _.defaults({}, options, setOptions);
+      //若配置的parse为真，则调用clt.parse方法处理models，比如当这个models是请求回来还没处理的。
       if (options.parse) models = this.parse(models, options);
       var singular = !_.isArray(models);
+      //统一格式，为数组。
       models = singular ? (models ? [models] : []) : _.clone(models);
       var i, l, id, model, attrs, existing, sort;
       var at = options.at;
+      //model的构造函数
       var targetModel = this.model;
+      //sortable是判断是否可以排序的标识。若comparator(比较器，其实这个比较器就是一个用来比较的字段的字段名)存在，且没有at，且sort为真，则可以排序。
       var sortable = this.comparator && (at == null) && options.sort !== false;
+      //排序依据的字段的字段名。
       var sortAttr = _.isString(this.comparator) ? this.comparator : null;
       var toAdd = [], toRemove = [], modelMap = {};
       var add = options.add, merge = options.merge, remove = options.remove;
+
       var order = !sortable && add && remove ? [] : false;
 
       // Turn bare objects into model references, and prevent invalid models
       // from being added.
       for (i = 0, l = models.length; i < l; i++) {
+        //获取传进来的对象，这个对象可以是一个model，也可以是一个由属性值组成的对象(但必须有id)。
         attrs = models[i] || {};
+        //若该对象是Model的实例。
         if (attrs instanceof Model) {
+          //则设置model为该对象。
+          //这个id是用来查找这个model用的，而这里id是一个Model类型的对象，没有关系，因为get方法接受传一个带`id`字段的对象做参数
           id = model = attrs;
         } else {
+          //若该对象不是Model的实例，则获取该对象的id
           id = attrs[targetModel.prototype.idAttribute || 'id'];
         }
 
         // If a duplicate is found, prevent it from being added and
         // optionally merge it into the existing model.
+        //从clt.models里面取model
         if (existing = this.get(id)) {
+          //
           if (remove) modelMap[existing.cid] = true;
           if (merge) {
+            //若attrs === model，即attrs是Model的实例，则获取model上的attrs，若不是，则认为这是一个由属性值组成的对象。
+            //其实这里用这么多个对象不知道为啥的，感觉很混乱【attrs，model，existing】
             attrs = attrs === model ? model.attributes : attrs;
+            //若需要解析，则调用model.parse解析属性
             if (options.parse) attrs = existing.parse(attrs, options);
+            //把属性设置到model上。
             existing.set(attrs, options);
+            //判断是否真的需要排序。(可排序，且sort)
             if (sortable && !sort && existing.hasChanged(sortAttr)) sort = true;
           }
           models[i] = existing;
@@ -1066,6 +1097,9 @@
 
     // Return models with matching attributes. Useful for simple cases of
     // `filter`.
+    //find是根据对应属性找model，即使有多个符合条件也将返回第一个。
+    //filter是根据对应属性过滤model，返回和过滤条件相符的model的集合。
+    //其实find和filter都是一样的意思，只是返回的结果不一样，一个是返回首个model，一个是返回所有model的集合。
     where: function(attrs, first) {
       if (_.isEmpty(attrs)) return first ? void 0 : [];
       return this[first ? 'find' : 'filter'](function(model) {
@@ -1078,6 +1112,7 @@
 
     // Return the first model with matching attributes. Useful for simple cases
     // of `find`.
+    //根据对应属性找model，即使有多个符合条件也将返回第一个。
     findWhere: function(attrs) {
       return this.where(attrs, true);
     },
@@ -1180,18 +1215,25 @@
     },
 
     // Internal method to create a model's ties to a collection.
+    //为clt添加model的引用关系。或者说为model添加对clt的引用关系比较贴切。
     _addReference: function(model, options) {
+      //为clt._byId对象添加model.cid的键值索引
       this._byId[model.cid] = model;
+      //若id存在时，model.id的键值索引也一并添加
       if (model.id != null) this._byId[model.id] = model;
+      //若model.collection没有指向，则将该属性指向当前clt
       if (!model.collection) model.collection = this;
+      //为model添加all事件，_onModelEvent是回调，this是上下文。
       model.on('all', this._onModelEvent, this);
     },
 
     // Internal method to sever a model's ties to a collection.
+    //对应上面添加，这里必然有个移除。不过不知道为什么不在这里删除_byId内的键值索引。
     _removeReference: function(model, options) {
       //如果model的collection是当前clt，则删除model.collection，
       //大概意思就是删除model和clt之间的联系。。
       if (this === model.collection) delete model.collection;
+      //解除model的all事件，_onModelEvent还是回调，不知道添加和移除里面一样的回调代表什么。
       model.off('all', this._onModelEvent, this);
     },
 
@@ -1199,7 +1241,10 @@
     // Sets need to update their indexes when models change ids. All other
     // events simply proxy through. "add" and "remove" events that originate
     // in other collections are ignored.
+    //为model添加和移除all时的回调处理函数。
+    //暂时。。不知道这些是用来干嘛的。。
     _onModelEvent: function(event, model, collection, options) {
+      //
       if ((event === 'add' || event === 'remove') && collection !== this) return;
       if (event === 'destroy') this.remove(model, options);
       if (model && event === 'change:' + model.idAttribute) {
