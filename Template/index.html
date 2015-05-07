@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title></title>
     <link rel="stylesheet" href="css/t.css"/>
-    <script src="struct.js"></script>
 </head>
 <body>
     <fieldset class="l-layout-container">
@@ -12,7 +11,7 @@
         <fieldset class="l-layout-left">
             <legend>元件</legend>
             <!--单个元件-start-->
-            <div class="l-unit-container t-unit-drag">
+            <div class="l-unit-container t-unit-drag" data-uid="test-unit-1">
                 <div class="l-layout-container l-layout-right">
                     <span class="t-unit-drag-btn">拖动</span>
                 </div>
@@ -22,7 +21,7 @@
             </div>
             <!--单个元件-end-->
             <!--单个元件-start-->
-            <div class="l-unit-container t-unit-drag">
+            <div class="l-unit-container t-unit-drag" data-uid="test-unit-2">
                 <div class="l-layout-container l-layout-right">
                     <span class="t-unit-drag-btn">拖动</span>
                 </div>
@@ -32,7 +31,7 @@
             </div>
             <!--单个元件-end-->
             <!--单个元件-start-->
-            <div class="l-unit-container t-unit-drag">
+            <div class="l-unit-container t-unit-drag" data-uid="test-unit-3">
                 <div class="l-layout-container l-layout-right">
                     <span class="t-unit-drag-btn">拖动</span>
                 </div>
@@ -60,5 +59,9 @@
         </fieldset>
         <!--实体栏-end-->
     </fieldset>
+    <div class="t-new-container"></div>
+    <script src="struct.js"></script>
+    <script src="js/jquery-1.11.1.js"></script>
+    <script src="js/t.js"></script>
 </body>
 </html>

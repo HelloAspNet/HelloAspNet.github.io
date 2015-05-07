@@ -195,3 +195,11 @@ body {
 .t-unit-drag-btn:hover {
   background-color: #f2f2f2;
 }
+.t-new-container {
+  width: 0;
+  height: 0;
+}
+.t-dragable {
+  position: absolute;
+  cursor: default;
+}
