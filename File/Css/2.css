@@ -1,8 +1,0 @@
-/*基本样式重置*/ 
-ol,ul{list-style:none;}
-:focus{outline:0;}
-table {border-collapse: collapse;border-spacing: 0;}
-a img{border:0;}
-img{vertical-align:middle;}
-del {text-decoration: line-through;}
-em {font-style: normal;}
