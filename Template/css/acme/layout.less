@@ -1,0 +1,495 @@
+
+@import "variables.less";
+@import "compatibility.less";
+@import "util.less";
+@import "./clockhand.less";
+
+//
+// 总体布局
+// -------------------------------------
+// ## Type: [Method]
+//
+// ## Usage:
+//  .me-layout(@position, @height);
+//  @position: top/top-fixed/center/bottom/bottom-fixed
+//
+// ## Example:
+//  .me-header{
+//    .me-layout(top-fixed, 85px);
+//    .me-wrapper{
+//      background-color: #CA3D4E;
+//      .me-main{
+//        //...
+//      }
+//    }
+//  }
+//
+//  .me-body{
+//    .me-layout();
+//    .me-wrapper{
+//      background-color: #B22E44;
+//      .me-main{
+//        .margin(20px, _);
+//        .padding(20px, _, 60px);
+//        background-color: #fff;
+//      }
+//    }
+//  }
+//
+//  .me-footer{
+//    .me-layout(bottom-fixed, 60px);
+//    .me-wrapper{
+//      background-color: #CA3D4E;
+//      .me-main{
+//        //...
+//      }
+//    }
+//  }
+//
+.me-layout(@position: _, @height: _){
+  .do() when (@support-old-ie){
+    _position: relative;
+  }
+  .do() when not (@height = _){
+    height: @height;
+  }
+  .do();
+  .me-wrapper{
+    .do() when (@position = top-fixed), (@position = bottom-fixed){
+      position: fixed;
+      .do() when (@support-old-ie){
+        _position: absolute;
+      }
+      .do();
+    }
+    .do() when (@position = top), (@position = bottom){
+      position: absolute;
+    }
+
+
+    .do() when (@position = top), (@position = top-fixed){
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: @header-z-index;
+    }
+
+    .do() when (@position = bottom), (@position = bottom-fixed){
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: @footer-z-index;
+    }
+
+    .do() when (@position = _){
+      .clearfix();
+    }
+
+    .do() when not (@height = _){
+      height: @height;
+    }
+    .do();
+  }
+}
+
+//
+////
+//// 多列等宽布局。
+//// -------------------------------------
+//// ## Type: [Class]
+////
+//// ## Usage:
+////  .me-split
+////
+//// ## Example:
+////  <ul class="acme-split v3">
+////  <ol class="acme-split v3">
+////
+//.me-split{
+//  // ## Base Css
+//  ul&, ol& {
+//    .clearfix();
+//    .do() when not(@support-old-ie){
+//      > li{
+//        float: left;
+//      }
+//    }
+//    .do() when (@support-old-ie){
+//      li{
+//        float: left;
+//      }
+//      * li{
+//        float: initial;
+//        width: initial;
+//      }
+//    }
+//    .do();
+//  }
+//
+//  // ## Private Method
+//  .split(@count){
+//    ul&, ol& {
+//      .do() when not(@support-old-ie){
+//        > li{
+//          width: 100% / @count;
+//        }
+//      }
+//      .do() when (@support-old-ie){
+//        li{
+//          width: 100% / @count;
+//        }
+//      }
+//      .do();
+//    }
+//  }
+//  // ## Extension Version
+//  &.v2{
+//    .split(2);
+//  }
+//  &.v3{
+//    .split(3);
+//  }
+//  &.v4{
+//    .split(4);
+//  }
+//  &.v5{
+//    .split(5);
+//  }
+//}
+
+
+//
+// 多列等宽布局。
+// -------------------------------------
+// ## Type: [Method]
+//
+// ## Usage:
+//  .me-split(@count)
+//
+// ## Example:
+//  .nav-split{
+//    .me-split(3);
+//  }
+//
+.me-split(@count: 0){
+  .do() when(@count > 0) {
+    .clearfix();
+    li {
+      float: left;
+      width: 100% / @count;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .do() when(@count = 0) {
+    display: table;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    li {
+      display: table-cell;
+      //width: 1px;
+    }
+  }
+  .do();
+}
+
+//
+// 块元素居中。
+// -------------------------------------
+// ## Type: [Method]
+//
+// ## Usage:
+//  .me-center(@width)
+//
+// ## Example:
+//  .xxx{
+//    .me-center(@width)
+//  }
+//
+.me-center(@width){
+  margin-left: auto;
+  margin-right: auto;
+  width: @width;
+}
+
+.me-info(@position: _){
+  .do() when (@position = fixed){
+
+  }
+}
+
+.me-mask(@height: _){
+  position: fixed;
+  .do() when not (@height = _){
+    height: @height;
+  }
+  background-color: rgba(0, 0, 0, .7);
+  .do() when (@support-old-ie){
+    *background-color: rgb(0, 0, 0);
+  }
+}
+
+
+// test 2
+//
+//.me-layout(@position: _, @height: _){
+//  .do() when (@position = top), (@position = top-fixed){
+//    top: 0;
+//    left: 0;
+//  }
+//
+//  .do() when (@position = bottom), (@position = bottom-fixed){
+//    bottom: 0;
+//    left: 0;
+//  }
+//
+//  .do() when (@position = center){
+//    position:relative;
+//    left:50%;
+//    float:left;
+//  }
+//  .do() when not (@height = _){
+//    height: @height;
+//  }
+//  .do();
+//  .me-wrapper{
+//    .do() when (@position = top), (@position = top-fixed){
+//      .do() when (@support-old-ie){
+//        position: absolute;
+//      }
+//      .do() when not(@support-old-ie) and (@position = top-fixed){
+//        position: fixed;
+//      }
+//      .do();
+//      top: 0;
+//      left: 0;
+//      z-index: @header-z-index;
+//    }
+//
+//    .do() when (@position = bottom), (@position = bottom-fixed){
+//      .do() when (@support-old-ie){
+//        position: absolute;
+//      }
+//      .do() when not(@support-old-ie) and (@position = bottom-fixed){
+//        position: fixed;
+//      }
+//      .do();
+//      bottom: 0;
+//      left: 0;
+//      z-index: @footer-z-index;
+//    }
+//
+//    .do() when (@position = center){
+//      position:relative;
+//      left:-50%;
+//      float:left;
+//    }
+//
+//    .do() when not (@height = _){
+//      height: @height;
+//    }
+//    .do();
+//    width: 100%;
+//    .me-main{
+//
+//    }
+//  }
+//}
+
+
+
+//  test 1
+//
+// @position: top top-fixed center bottom bottom-fixed;
+//
+// 调用
+//  .me-layout(header, top-fixed, 85px);
+//  .me-layout(body, center);
+//  .me-layout(footer, top-fixed, 60px);
+//  @main-width: 1200px;
+//  .me-header-wrapper{
+//    .me-header{
+//      background-color: #CA3D4E;
+//    }
+//  }
+//  .me-body-wrapper{
+//    .me-body{
+//
+//    }
+//  }
+//  .me-footer-wrapper{
+//    .me-footer{
+//
+//    }
+//  }
+
+//.me-layout(@name, @position: _, @height: _){
+//  .me-@{name}-wrapper{
+//    .do() when (@position = center){
+//      position:relative;
+//      left:50%;
+//      float:left;
+//    }
+//    .do() when not (@height = _){
+//      height: @height;
+//    }
+//    .do();
+//    .me-@{name}{
+//
+//      .do() when (@position = top), (@position = top-fixed){
+//        .do() when (@support-old-ie){
+//          position: absolute;
+//        }
+//        .do() when not(@support-old-ie) and (@position = top-fixed){
+//          position: fixed;
+//        }
+//        .do();
+//        top: 0;
+//        left: left;
+//      }
+//
+//      .do() when (@position = bottom), (@position = bottom-fixed){
+//        .do() when (@support-old-ie){
+//          position: absolute;
+//        }
+//        .do() when not(@support-old-ie) and (@position = bottom-fixed){
+//          position: fixed;
+//        }
+//        .do();
+//        bottom: 0;
+//        left: left;
+//      }
+//
+//      .do() when (@position = center){
+//        position:relative;
+//        left:-50%;
+//        float:left;
+//      }
+//      .do();
+//    }
+//  }
+//}
+//
+//
+
+
+
+//
+//.me-layout(@header-height, @footer-height, @header-position: relative, @footer-position: relative, @body-center: false){
+//  .do() when (@support-old-ie) and (@header-position = fixed){
+//      @header-position: absolute;
+//  }
+//  .do() when (@support-old-ie) and (@footer-position = fixed){
+//      @footer-position: absolute;
+//  }
+//  .do();
+//
+//  .me-header{
+//    .do() when (@header-position = fixed){
+//      .fixed(0, _, _, 0);
+//      width: 100%;
+//    }
+//    .do() when (@header-position = absolute){
+//      .absolute(0, _, _, 0);
+//      width: 100%;
+//    }
+//    .do() when not (@header-height = _), (@header-height = relative){
+//      height: @header-height;
+//    }
+//    .do();
+//    z-index: @header-z-index;
+//  }
+//
+//  .do() when (@body-center){
+//    .me-body-wrapper{
+//      .do() when (@header-position = fixed), (@header-position = absolute){
+//        top: @header-height;
+//      }
+//      .do() when (@footer-position = fixed), (@footer-position = absolute){
+//        bottom: @footer-height;
+//      }
+//      .do();
+//      position:relative;
+//      left:50%;
+//      float:left;
+//      .me-body{
+//        position:relative;
+//        left:-50%;
+//        float:left;
+//      }
+//    }
+//  }
+//  .do() when not(@body-center){
+//    .me-body{
+//      .do() when (@header-position = fixed), (@header-position = absolute){
+//        margin-top: @header-height;
+//      }
+//      .do() when (@footer-position = fixed), (@footer-position = absolute){
+//        margin-bottom: @footer-height;
+//      }
+//      .do();
+//      .clearfix();
+//    }
+//  }
+//  .do();
+//
+//  .me-footer{
+//    .do() when (@footer-position = fixed){
+//      .fixed(_, _, 0, 0);
+//      width: 100%;
+//    }
+//    .do() when (@footer-position = absolute){
+//      .absolute(_, _, 0, 0);
+//      width: 100%;
+//    }
+//    .do() when not (@footer-height = _) {
+//      height: @footer-height;
+//    }
+//    .do();
+//    z-index: @footer-z-index;
+//  }
+//}
+
+
+//.me-layout-lcr{
+//  .do() when (true){
+//    .me-left
+//  }
+//  .do();
+//}
+
+// 扩展标签范围，需要配合父元素padding使用，一般用来扩展a标签，让点击区域更大
+//  例：
+//      //这里比如扩展10个像素
+//      div {
+//        padding: 10px;
+//        a {
+//          .me-expand(10px);
+//        }
+//      }
+.me-expand(...) {
+  display: block;
+  @val-1: extract(@arguments, 1);
+  @val-2: extract(@arguments, 2);
+  @val-3: extract(@arguments, 3);
+  @val-4: extract(@arguments, 4);
+  .do(@arguments) when (length(@arguments) = 1){
+    margin: -@val-1;
+    padding: @val-1;
+  }
+  .do(@arguments) when (length(@arguments) = 2){
+    margin: -@val-1 -@val-2;
+    padding: @val-1 @val-2;
+  }
+  .do(@arguments) when (length(@arguments) = 3){
+    margin: -@val-1 -@val-2 -@val-3;
+    padding: @val-1 @val-2 @val-3;
+  }
+  .do(@arguments) when (length(@arguments) = 4){
+    margin: -@val-1 -@val-2 -@val-3 -@val-4;
+    padding: @val-1 @val-2 @val-3 @val-4;
+  }
+  .do(@arguments);
+}

@@ -1,0 +1,197 @@
+/**
+ * Created by xyz on 2015/5/8.
+ */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-family: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+body {
+  line-height: 1;
+}
+ol,
+ul {
+  list-style: none;
+}
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  vertical-align: middle;
+}
+caption,
+th,
+td {
+  text-align: left;
+  font-weight: normal;
+  vertical-align: middle;
+}
+a img {
+  border: none;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+summary,
+main {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-family: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+audio,
+canvas,
+video {
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+}
+audio:not([controls]),
+[hidden] {
+  display: none;
+}
+/* 排版 */
+fieldset {
+  margin: 25px 2px;
+  border: 1px solid #c0c0c0;
+  padding: 6px 10px 4px;
+}
+legend {
+  margin: 20px 0 10px;
+  border: 0;
+  /* 1 */
+  padding: 0;
+  white-space: normal;
+  /* 2 */
+  *margin-left: -7px;
+  /* 3 */
+  font-size: 1.5rem;
+}
+fieldset > *:nth-child(n + 2) {
+  margin-bottom: 10px;
+}
+/* /排版 */
+.l-layout-container {
+  *zoom: 1;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.l-layout-container:before,
+.l-layout-container:after {
+  display: table;
+  content: "";
+}
+.l-layout-container:after {
+  clear: both;
+}
+.l-layout-left {
+  float: left;
+}
+.l-layout-right {
+  float: right;
+}
+.l-layout-center,
+.l-layout-middle {
+  overflow: hidden;
+}
+.l-unit-container {
+  width: 200px;
+}
+.l-tool-container {
+  width: 200px;
+}
+body {
+  -user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+.t-unit-drag {
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+}
+.t-unit-drag-btn {
+  margin-right: -15px;
+  border: 1px solid #ccc;
+  border-right: 0;
+  padding: 10px;
+  cursor: move;
+}
+.t-unit-drag-btn:hover {
+  background-color: #f2f2f2;
+}
