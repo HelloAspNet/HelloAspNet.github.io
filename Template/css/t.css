@@ -203,3 +203,14 @@ body {
   position: absolute;
   cursor: default;
 }
+.t-active-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  filter: alpha(opacity=100);
+}
+.t-active-region.t-state-active {
+  margin: -1px 0 0 -1px;
+  border: 1px dashed #ccc;
+}

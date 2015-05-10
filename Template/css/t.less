@@ -93,3 +93,14 @@ body{
   .absolute();
   cursor: default;
 }
+
+.t-active-region{
+  .absolute(0, _, _, 0);
+  .opacity(100);
+  &.t-state-active{
+    margin: -1px 0 0 -1px;
+    border: 1px dashed #ccc;
+  }
+}
+
+
